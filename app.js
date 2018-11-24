@@ -1,3 +1,5 @@
+const degree = '°'
+
 // HTML selectors
 const container = document.querySelector('.container')
 const weatherMain = document.querySelector('.weather.main')
