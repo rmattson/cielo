@@ -1,5 +1,3 @@
-const degree = '°'
-
 const icons = {
   nightFog: "2682801 - cloudy fog foggy mist moon night weather.svg",
   dayFog: "2682802 - cloudy day fog foggy mist sun weather.svg",
@@ -52,7 +50,19 @@ const icons = {
   dayCloudy: "2682849 - cloud cloudy day forecast sun weather.svg",
   cloudy: "2682850 - cloud clouds cloudy forecast weather.svg",
 }
-  
+
+import {api_key} from './config.js'
+
+const degree = '°'
+
+const locLat = 37.7799
+const locLong = -122.4835
+
+const forecastUrl = 'https://api.weather.gov/gridpoints/MTR/85,127/forecast'
+
+const headers = new Headers({
+  'User-Agent': 'Cielo, a weather app for Raspberry Pi, https://github.com/rmattson/cielo'
+})
 
 // HTML selectors
 const container = document.querySelector('.container')
@@ -97,8 +107,29 @@ function updateDates() {
   day3Heading.textContent = `${day3.getMonth()+1}/${day3.getDate()}`
 }
 
+function updateTemps(element, minTemp, maxTemp) {
+  min = element.querySelector('.min')
+  max = element.querySelector('.max')
+
+  min.textContent = `${minTemp}${degree}`
+  max.textContent = `${maxTemp}${degree}`
+} 
+
+async function getData(url) {
+  try {
+    const response = await fetch(url, {headers: headers})
+    const data = await response.json()
+    return data
+  }
+  catch (err) {
+    console.log('Fetch failed', err)
+  }
+}
+
+function convertCtoF(c, rounding = 0) {
+  let conversion = (c * (9/5)) + 32
+  return Number((conversion).toFixed(rounding))
+}
+
 updateDates()
 setTimeout(updateDates, 60000)
-
-
-
