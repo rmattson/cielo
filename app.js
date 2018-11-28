@@ -1,68 +1,35 @@
-const icons = {
-  nightFog: "2682801 - cloudy fog foggy mist moon night weather.svg",
-  dayFog: "2682802 - cloudy day fog foggy mist sun weather.svg",
-  warning: "2682803 - attention erro exclamation mark warn warning weather.svg",
-  pollen: "2682804 - blossom dust flower particles pollen pollution weather.svg",
-  co2: "2682805 - acid carbon co2 dioxide mist pollution weather.svg",
-  uv: "2682806 - light radiation rays sun ultraviolet uv weather.svg",
-  waterDrop: "2682807 - drop high humidity percentage precipitation rain weather.svg",
-  highTemp: "2682808 - high hot summer temperature termometer weather.svg",
-  lowTemp: "2682809 - cold freezing low temperature termometer weather winter.svg",
-  windy: "2682810 - catcher direction flag weather wind windy.svg",
-  nightCloudyFog: "2682811 - cloud cloudy fog mist moon night weather.svg",
-  dayCloudyFog: "2682812 - cloud coudy day fog mist sun weather.svg",
-  cloudyFog: "2682813 - cloud clouds cloudy fog forecast mist weather.svg",
-  nightSnow: "2682814 - cloud moon night precipitation snow snowing weather.svg",
-  daySnow: "2682815 - cloud day forecast precipitation snow sun weather.svg",
-  snow: "2682816 - cloud cloudy forecast precipitation snow snowing weather.svg",
-  nightHail: "2682817 - hail moon night precipitation snow storm weather.svg",
-  dayHail: "2682818 - day hail precipitation snow storm sun weather.svg",
-  cloudyHail: "2682819 - cloud cloudy hail hail stones snow storm weather.svg",
-  hail: "2682820 - forecast hail rain snow stones storm weather.svg",
-  fog: "2682821 - fog foggy forecast mist weather.svg",
-  rainbow: "2682822 - forecast rainbow spectr weather.svg",
-  snowflake: "2682823 - forecast snow snowflake weather.svg",
-  sunrise: "2682824 - horizont morning sun sunrise weather.svg",
-  sunset: "2682825 - evening horizon sun sundown sunset weather.svg",
-  nightLightning: "2682826 - bolt light moon night rain thunderstorm weather.svg",
-  dayLightning: "2682827 - cloud day light bolt rain sun thunderstorm weather.svg",
-  lightning: "2682828 - cloud light bolt lightning rain storm thunder weather.svg",
-  degreesF: "2682829 - degrees farenheit forecast temprerature weather.svg",
-  degreesC: "2682830 - celsius degrees forecast temperature weather.svg",
-  nightWind: "2682831 - cloud forecast moon night weather wind windy.svg",
-  dayWind: "2682832 - cloud day forecast sun weather wind windy.svg",
-  nightHeavyRain: "2682833 - cloud forecast moon night precipitation rain weather.svg",
-  dayHeavyRain: "2682834 - cloud day forecast rain rainy sun weather.svg",
-  heavyRain: "2682835 - cloud cloudy forecast precipitation rain rainy weather.svg",
-  nightLightRain: "2682836 - cloud drop forecast moon night rain weather.svg",
-  dayLightRain: "2682837 - cloud day drop forecast rain sun weather.svg",
-  lightRain: "2682838 - cloud cloudy drop forecast rain rainy weather.svg",
-  rainDrop: "2682839 - drop forecast humidity precipitation rain weather.svg",
-  lightningBolt: "2682840 - bolt elictricity light lightning storm thunder weather.svg",
-  cloudyWindy: "2682841 - cloud cloudy forecast storm weather wind windy.svg",
-  breezyWindy: "2682842 - breeze fast speed weather wind windy.svg",
-  nightRain: "2682843 - cloud forecast moon night rain snow weather.svg",
-  dayRain: "2682844 - cloud day precipitation rain snow sun weather.svg",
-  rain: "2682845 - cloud cloudy forecast rain sun weather.svg",
-  nightCloudy: "2682846 - cloud cloudy forecast moon night weather.svg",
-  nightClear: "2682847 - eclipse forecast moon night space weather.svg",
-  dayClear: "2682848 - day forecast sun sunny weather.svg",
-  dayCloudy: "2682849 - cloud cloudy day forecast sun weather.svg",
-  cloudy: "2682850 - cloud clouds cloudy forecast weather.svg",
-}
+import {config} from './config.js'
 
-import {api_key} from './config.js'
+class Forecast {
+  constructor() {
+    this.date = ''
+    this.min = []
+    this.max = []
+    this.icons = {}
+  }
+
+  addIcon(icon) {
+    if (icon in this.icons) {
+      this.icons[icon]++
+    } else {
+      this.icons[icon] = 1
+    }
+  }
+
+  low() {
+    return Math.min(... this.min)
+  }
+
+  high() {
+    return Math.max(... this.max)
+  }
+}
 
 const degree = '°'
 
-const locLat = 37.7799
-const locLong = -122.4835
+const currentWeatherUrl = `http://api.openweathermap.org/data/2.5/weather?zip=${config.zipcode},us&APPID=${config.api_key}&units=${config.units}`
 
-const forecastUrl = 'https://api.weather.gov/gridpoints/MTR/85,127/forecast'
-
-const headers = new Headers({
-  'User-Agent': 'Cielo, a weather app for Raspberry Pi, https://github.com/rmattson/cielo'
-})
+const forecastUrl = `http://api.openweathermap.org/data/2.5/forecast?zip=${config.zipcode}&APPID=${config.api_key}&units=${config.units}`
 
 // HTML selectors
 const container = document.querySelector('.container')
@@ -108,16 +75,30 @@ function updateDates() {
 }
 
 function updateTemps(element, minTemp, maxTemp) {
-  min = element.querySelector('.min')
-  max = element.querySelector('.max')
+  const min = element.querySelector('.min')
+  const max = element.querySelector('.max')
 
   min.textContent = `${minTemp}${degree}`
   max.textContent = `${maxTemp}${degree}`
 } 
 
+function updateIcon(element, icon) {
+  const iconImage = `icons/${icon}.svg`
+  element.querySelector('img').src = iconImage
+}
+
+function updateCurrent(data, rounding = 0) {
+  const cur = weatherMain.querySelector('.current')
+  const rounded = data.main.temp.toFixed(rounding)
+  cur.textContent = `${rounded}${degree}`
+  updateIcon(weatherMain, data.weather[0].icon)
+  weatherMain.querySelector('.min').textContent = `${data.main.temp_min.toFixed(rounding)}${degree}`
+  weatherMain.querySelector('.max').textContent = `${data.main.temp_max.toFixed(rounding)}${degree}`
+}
+
 async function getData(url) {
   try {
-    const response = await fetch(url, {headers: headers})
+    const response = await fetch(url)
     const data = await response.json()
     return data
   }
@@ -126,10 +107,63 @@ async function getData(url) {
   }
 }
 
-function convertCtoF(c, rounding = 0) {
-  let conversion = (c * (9/5)) + 32
-  return Number((conversion).toFixed(rounding))
+function getDate(item) {
+  return item.dt_txt.split(' ')[0]
 }
 
 updateDates()
 setTimeout(updateDates, 60000)
+
+function processForecast(data) {
+  let forecastArray = []
+  let usedDates = []
+  while (forecastArray.length < 3) {
+    let forecast = new Forecast()
+    
+    let listPos = 0
+    let date = getDate(data.list[listPos])
+    while (usedDates.includes(date)) {
+      listPos++
+      date = getDate(data.list[listPos])
+    }
+    usedDates.push(date)
+
+    forecast.date = date
+    while (date === getDate(data.list[listPos])) {
+      forecast.min.push(data.list[listPos].main.temp_min)
+      forecast.max.push(data.list[listPos].main.temp_max)
+      data.list[listPos].weather.forEach(item => {
+        forecast.addIcon(item.icon)
+      })
+      listPos++
+    }
+
+    forecastArray.push(forecast)
+  }
+  return forecastArray
+}
+
+// Get current weather
+getData(currentWeatherUrl).then(data => {
+  updateCurrent(data)
+})
+
+const elementMap = {
+  '0': weather1,
+  '1': weather2,
+  '2': weather3
+}
+
+function updateForecast(item, index) {
+  updateTemps(elementMap[index], item.low().toFixed(0), item.high().toFixed(0))
+  for (let icon in item.icons) {
+    if (icon.includes('d')) {
+      elementMap[index].querySelector('img').src = `icons/${icon}.svg`
+    }
+  }
+}
+
+getData(forecastUrl).then(data => {
+  let forecasts = processForecast(data)
+  forecasts.forEach(updateForecast)
+})

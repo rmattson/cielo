@@ -41,8 +41,8 @@ body {
 
 .container {
   display: flex;
-  width: 720px;
-  height: 440px;
+  width: 800px;
+  height: 480px;
   margin: 0 auto;
   padding: 10px;
   align-self: center;
