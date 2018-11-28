@@ -111,9 +111,6 @@ function getDate(item) {
   return item.dt_txt.split(' ')[0]
 }
 
-updateDates()
-setTimeout(updateDates, 60000)
-
 function processForecast(data) {
   let forecastArray = []
   let usedDates = []
@@ -143,10 +140,7 @@ function processForecast(data) {
   return forecastArray
 }
 
-// Get current weather
-getData(currentWeatherUrl).then(data => {
-  updateCurrent(data)
-})
+
 
 const elementMap = {
   '0': weather1,
@@ -163,7 +157,23 @@ function updateForecast(item, index) {
   }
 }
 
-getData(forecastUrl).then(data => {
-  let forecasts = processForecast(data)
-  forecasts.forEach(updateForecast)
-})
+function getCurrentWeather() {
+  getData(currentWeatherUrl).then(data => {
+    updateCurrent(data)
+  })
+}
+
+function getForecastWeather() {
+  getData(forecastUrl).then(data => {
+    let forecasts = processForecast(data)
+    forecasts.forEach(updateForecast)
+  })
+}
+
+getCurrentWeather()
+getForecastWeather()
+updateDates()
+
+setInterval(updateDates, 600000)
+setInterval(getCurrentWeather, 600000)
+setInterval(getForecastWeather, 600000)
