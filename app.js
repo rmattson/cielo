@@ -26,10 +26,13 @@ class Forecast {
 }
 
 const degree = '°'
+const refreshMs = 600000
 
 const currentWeatherUrl = `http://api.openweathermap.org/data/2.5/weather?zip=${config.zipcode},us&APPID=${config.api_key}&units=${config.units}`
 
 const forecastUrl = `http://api.openweathermap.org/data/2.5/forecast?zip=${config.zipcode}&APPID=${config.api_key}&units=${config.units}`
+
+const noCursor = 'body:hover { cursor: none; }'
 
 // HTML selectors
 const container = document.querySelector('.container')
@@ -140,8 +143,6 @@ function processForecast(data) {
   return forecastArray
 }
 
-
-
 const elementMap = {
   '0': weather1,
   '1': weather2,
@@ -170,10 +171,20 @@ function getForecastWeather() {
   })
 }
 
+function hideCursor() {
+  if (config.hideCursor) {
+    let newStyle = document.createElement('style')
+    newStyle.appendChild(noCursor)
+    document.querySelector('head').appendChild(newStyle)
+  }
+}
+
+hideCursor()
+
 getCurrentWeather()
 getForecastWeather()
 updateDates()
 
-setInterval(updateDates, 600000)
-setInterval(getCurrentWeather, 600000)
-setInterval(getForecastWeather, 600000)
+setInterval(updateDates, refreshMs)
+setInterval(getCurrentWeather, refreshMs)
+setInterval(getForecastWeather, refreshMs)

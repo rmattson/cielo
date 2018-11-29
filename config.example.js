@@ -4,5 +4,6 @@
 export const config = {
   api_key: '',
   zipcode: 94121,
-  units: 'imperial' // metric or imperial
+  units: 'imperial', // metric or imperial
+  hideCursor: false,
 }
