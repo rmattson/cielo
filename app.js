@@ -172,11 +172,11 @@ function getForecastWeather() {
 }
 
 function hideCursor() {
-  if (config.hideCursor) {
-    let newStyle = document.createElement('style')
-    newStyle.appendChild(noCursor)
-    document.querySelector('head').appendChild(newStyle)
-  }
+  if (!config.hideCursor) return
+
+  let newStyle = document.createElement('style')
+  newStyle.appendChild(document.createTextNode(noCursor))
+  document.querySelector('head').appendChild(newStyle)
 }
 
 hideCursor()
